@@ -27,7 +27,7 @@ public class LivroResource {
     }
 
     @PostMapping
-    @Operation(summary = "Cria um novo livro")
+    @Operation(summary = "Cadastra um novo livro")
     public ResponseEntity<LivroResponseDto> criar(@Valid @RequestBody LivroRequestDto dto) {
         Livro livro = service.criarLivro(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponseDto(livro));
@@ -41,14 +41,14 @@ public class LivroResource {
     }
 
     @GetMapping("/disponiveis")
-    @Operation(summary = "Lista todos os livros disponíveis")
+    @Operation(summary = "Lista apenas livros disponíveis")
     public ResponseEntity<List<LivroResponseDto>> listarDisponiveis() {
-        List<LivroResponseDto> dtos = mapper.toResponseDtoList(service.listarLivrosDisponiveis());
+        List<LivroResponseDto> dtos = mapper.toResponseDtoList(service.listarDisponiveis());
         return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca um livro por ID")
+    @Operation(summary = "Busca livro por ID")
     public ResponseEntity<LivroResponseDto> buscarPorId(@PathVariable Integer id) {
         Livro livro = service.buscarPorId(id);
         return ResponseEntity.ok(mapper.toResponseDto(livro));

@@ -34,4 +34,8 @@ public class Livro {
 
     @Column(nullable = false)
     private Boolean disponivel = true;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 }

@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
-@Tag(name = "Usuários", description = "Operações relacionadas aos usuários")
+@Tag(name = "Usuários", description = "Operações relacionadas aos usuários da biblioteca")
 public class UsuarioResource {
 
     private final UsuarioService service;
@@ -27,7 +27,7 @@ public class UsuarioResource {
     }
 
     @PostMapping
-    @Operation(summary = "Cria um novo usuário")
+    @Operation(summary = "Cadastra um novo usuário")
     public ResponseEntity<UsuarioResponseDto> criar(@Valid @RequestBody UsuarioRequestDto dto) {
         Usuario usuario = service.criarUsuario(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponseDto(usuario));
@@ -41,7 +41,7 @@ public class UsuarioResource {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca um usuário por ID")
+    @Operation(summary = "Busca usuário por ID")
     public ResponseEntity<UsuarioResponseDto> buscarPorId(@PathVariable Integer id) {
         Usuario usuario = service.buscarPorId(id);
         return ResponseEntity.ok(mapper.toResponseDto(usuario));

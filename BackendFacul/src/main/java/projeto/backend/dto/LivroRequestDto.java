@@ -1,12 +1,12 @@
 package projeto.backend.dto;
 
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Min;
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
 @Getter
+@Schema(description = "Objeto para cadastro/atualização de livro")
 public class LivroRequestDto {
 
     @NotBlank(message = "Informe o título do livro.")
@@ -16,16 +16,17 @@ public class LivroRequestDto {
     private final String autor;
 
     @NotNull(message = "Informe o ano de publicação.")
-    @Min(value = 1000, message = "Ano de publicação inválido.")
     private final Integer ano;
 
-    @NotNull(message = "Informe se o livro está disponível.")
     private final Boolean disponivel;
 
-    public LivroRequestDto(String titulo, String autor, Integer ano, Boolean disponivel) {
+    private final Integer categoriaId;
+
+    public LivroRequestDto(String titulo, String autor, Integer ano, Boolean disponivel, Integer categoriaId) {
         this.titulo = titulo;
         this.autor = autor;
         this.ano = ano;
-        this.disponivel = disponivel;
+        this.disponivel = disponivel != null ? disponivel : true;
+        this.categoriaId = categoriaId;
     }
 }

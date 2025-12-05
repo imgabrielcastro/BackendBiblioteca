@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/emprestimos")
-@Tag(name = "Empréstimos", description = "Operações relacionadas aos empréstimos")
+@Tag(name = "Empréstimos", description = "Operações relacionadas aos empréstimos de livros")
 public class EmprestimoResource {
 
     private final EmprestimoService service;
@@ -27,7 +27,7 @@ public class EmprestimoResource {
     }
 
     @PostMapping
-    @Operation(summary = "Cria um novo empréstimo")
+    @Operation(summary = "Realiza um novo empréstimo")
     public ResponseEntity<EmprestimoResponseDto> criar(@Valid @RequestBody EmprestimoRequestDto dto) {
         Emprestimo emprestimo = service.criarEmprestimo(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponseDto(emprestimo));
@@ -41,9 +41,16 @@ public class EmprestimoResource {
     }
 
     @GetMapping("/abertos")
-    @Operation(summary = "Lista todos os empréstimos em aberto")
+    @Operation(summary = "Lista empréstimos em aberto")
     public ResponseEntity<List<EmprestimoResponseDto>> listarAbertos() {
         List<EmprestimoResponseDto> dtos = mapper.toResponseDtoList(service.listarEmprestimosAbertos());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/atrasados")
+    @Operation(summary = "Lista empréstimos atrasados")
+    public ResponseEntity<List<EmprestimoResponseDto>> listarAtrasados() {
+        List<EmprestimoResponseDto> dtos = mapper.toResponseDtoList(service.listarEmprestimosAtrasados());
         return ResponseEntity.ok(dtos);
     }
 
@@ -54,24 +61,24 @@ public class EmprestimoResource {
         return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/atrasados")
-    @Operation(summary = "Lista empréstimos atrasados")
-    public ResponseEntity<List<EmprestimoResponseDto>> listarAtrasados() {
-        List<EmprestimoResponseDto> dtos = mapper.toResponseDtoList(service.listarAtrasados());
+    @GetMapping("/livro/{livroId}")
+    @Operation(summary = "Lista empréstimos por livro")
+    public ResponseEntity<List<EmprestimoResponseDto>> listarPorLivro(@PathVariable Integer livroId) {
+        List<EmprestimoResponseDto> dtos = mapper.toResponseDtoList(service.listarEmprestimosPorLivro(livroId));
         return ResponseEntity.ok(dtos);
     }
 
-    @PatchMapping("/{id}/devolver")
-    @Operation(summary = "Registra a devolução de um empréstimo")
-    public ResponseEntity<EmprestimoResponseDto> devolver(@PathVariable Integer id) {
-        Emprestimo emprestimo = service.registrarDevolucao(id);
+    @GetMapping("/{id}")
+    @Operation(summary = "Busca empréstimo por ID")
+    public ResponseEntity<EmprestimoResponseDto> buscarPorId(@PathVariable Integer id) {
+        Emprestimo emprestimo = service.buscarPorId(id);
         return ResponseEntity.ok(mapper.toResponseDto(emprestimo));
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Deleta um empréstimo")
-    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        service.deletarEmprestimo(id);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/{id}/devolver")
+    @Operation(summary = "Registra devolução de empréstimo")
+    public ResponseEntity<EmprestimoResponseDto> devolver(@PathVariable Integer id) {
+        Emprestimo devolvido = service.devolverEmprestimo(id);
+        return ResponseEntity.ok(mapper.toResponseDto(devolvido));
     }
 }

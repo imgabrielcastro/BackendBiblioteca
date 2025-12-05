@@ -1,10 +1,10 @@
 package projeto.backend.service;
 
 import org.springframework.stereotype.Service;
-import projeto.backend.dto.EmprestimoRequestDto;
 import projeto.backend.entity.Emprestimo;
-import projeto.backend.entity.Livro;
+import projeto.backend.dto.EmprestimoRequestDto;
 import projeto.backend.entity.Usuario;
+import projeto.backend.entity.Livro;
 import projeto.backend.enums.StatusEmprestimoEnum;
 import projeto.backend.mapper.EmprestimoMapper;
 import java.time.LocalDate;
@@ -31,18 +31,16 @@ public class EmprestimoService {
 
     public Emprestimo criarEmprestimo(EmprestimoRequestDto dto) {
         Usuario usuario = usuarioService.buscarPorId(dto.getUsuarioId());
-        Livro livro = livroService.buscarPorId(dto.getLivroId());
-
-        if (!livro.getDisponivel()) {
-            throw new RuntimeException("Livro não está disponível para empréstimo");
-        }
+        Livro livro = livroService.buscarPorIdDisponivel(dto.getLivroId());
 
         Emprestimo emprestimo = mapper.toEntity(dto);
         emprestimo.setUsuario(usuario);
         emprestimo.setLivro(livro);
-        emprestimo.setId(emprestimos.size() + 1);
+        emprestimo.setDataPrevista(dto.getDataPrevista());
 
-        livroService.atualizarDisponibilidade(livro.getId(), false);
+        livro.setDisponivel(false);
+
+        emprestimo.setId(emprestimos.size() + 1);
         emprestimos.add(emprestimo);
 
         return emprestimo;
@@ -52,6 +50,12 @@ public class EmprestimoService {
         return emprestimos;
     }
 
+    public List<Emprestimo> listarEmprestimosAbertos() {
+        return emprestimos.stream()
+                .filter(e -> e.getStatus() == StatusEmprestimoEnum.ABERTO)
+                .toList();
+    }
+
     public Emprestimo buscarPorId(Integer id) {
         return emprestimos.stream()
                 .filter(e -> e.getId().equals(id))
@@ -59,48 +63,44 @@ public class EmprestimoService {
                 .orElseThrow(() -> new RuntimeException("Empréstimo não encontrado"));
     }
 
-    public List<Emprestimo> listarEmprestimosPorUsuario(Integer usuarioId) {
-        return emprestimos.stream()
-                .filter(e -> e.getUsuario().getId().equals(usuarioId))
-                .toList();
-    }
-
-    public List<Emprestimo> listarEmprestimosAbertos() {
-        return emprestimos.stream()
-                .filter(e -> e.getStatus() == StatusEmprestimoEnum.ABERTO)
-                .toList();
-    }
-
-    public Emprestimo registrarDevolucao(Integer emprestimoId) {
-        Emprestimo emprestimo = buscarPorId(emprestimoId);
+    public Emprestimo devolverEmprestimo(Integer id) {
+        Emprestimo emprestimo = buscarPorId(id);
 
         if (emprestimo.getStatus() == StatusEmprestimoEnum.DEVOLVIDO) {
-            throw new RuntimeException("Empréstimo já foi devolvido");
+            throw new RuntimeException("Este empréstimo já foi devolvido");
         }
 
         emprestimo.setStatus(StatusEmprestimoEnum.DEVOLVIDO);
         emprestimo.setDataDevolucao(LocalDate.now());
 
-        livroService.atualizarDisponibilidade(emprestimo.getLivro().getId(), true);
+        Livro livro = emprestimo.getLivro();
+        livro.setDisponivel(true);
 
         return emprestimo;
     }
 
-    public List<Emprestimo> listarAtrasados() {
+    public List<Emprestimo> listarEmprestimosPorUsuario(Integer usuarioId) {
+        usuarioService.buscarPorId(usuarioId);
+
+        return emprestimos.stream()
+                .filter(e -> e.getUsuario().getId().equals(usuarioId))
+                .toList();
+    }
+
+    public List<Emprestimo> listarEmprestimosPorLivro(Integer livroId) {
+        livroService.buscarPorId(livroId);
+
+        return emprestimos.stream()
+                .filter(e -> e.getLivro().getId().equals(livroId))
+                .toList();
+    }
+
+    public List<Emprestimo> listarEmprestimosAtrasados() {
         LocalDate hoje = LocalDate.now();
+
         return emprestimos.stream()
                 .filter(e -> e.getStatus() == StatusEmprestimoEnum.ABERTO)
                 .filter(e -> e.getDataPrevista().isBefore(hoje))
                 .toList();
-    }
-
-    public void deletarEmprestimo(Integer id) {
-        Emprestimo emprestimo = buscarPorId(id);
-
-        if (emprestimo.getStatus() == StatusEmprestimoEnum.ABERTO) {
-            throw new RuntimeException("Não é possível deletar um empréstimo em aberto");
-        }
-
-        emprestimos.remove(emprestimo);
     }
 }

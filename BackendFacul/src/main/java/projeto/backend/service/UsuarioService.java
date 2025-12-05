@@ -1,8 +1,8 @@
 package projeto.backend.service;
 
 import org.springframework.stereotype.Service;
-import projeto.backend.dto.UsuarioRequestDto;
 import projeto.backend.entity.Usuario;
+import projeto.backend.dto.UsuarioRequestDto;
 import projeto.backend.mapper.UsuarioMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,11 +44,9 @@ public class UsuarioService {
     public Usuario atualizarUsuario(Integer id, UsuarioRequestDto dto) {
         Usuario usuario = buscarPorId(id);
 
-        if (!usuario.getEmail().equals(dto.getEmail())) {
-            for (Usuario u : usuarios) {
-                if (u.getEmail().equals(dto.getEmail()) && !u.getId().equals(id)) {
-                    throw new RuntimeException("Email já cadastrado");
-                }
+        for (Usuario u : usuarios) {
+            if (!u.getId().equals(id) && u.getEmail().equals(dto.getEmail())) {
+                throw new RuntimeException("Email já cadastrado por outro usuário");
             }
         }
 
